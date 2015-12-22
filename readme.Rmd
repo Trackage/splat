@@ -40,5 +40,16 @@ system.time({
   g2 <- x[]
 })
 
+## much simpler and almost as fast
+g <- SGAT:::.chaingrid(SGAT::chainCollapse(fit$x))
+g1 <- g
+system.time({
+x <- splatchain(g, SGAT::chainCollapse(fit$x))
+xs <- x  %>% group_by(cell)  %>%  summarize(bin = sum(bin))
+g1[xs$cell] <- xs$bin
+})
+system.time({
+g2 <- SGAT::Pimage(fit, grid = g)[]
+})
 
 ```

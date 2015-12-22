@@ -1,3 +1,16 @@
+#' @importFrom raster cellFromXY
+splatbin <- function(grid, xy, weight = NULL, previters = 0) {
+  summ <- data_frame(cell = cellFromXY(grid, xy), bin = 1) %>%
+    group_by(cell) %>%
+    summarize(bin = sum(bin))
+}
+
+
+splatchain <- function(grid, chain) {
+  l <- vector("list", nrow(chain))
+  for (i in seq_along(l)) l[[i]] <- splatbin(grid, t(chain[i,,]))
+  do.call(bind_rows, l)
+}
 
 
 #' Title

@@ -3,7 +3,7 @@ Type: Package
 Title: Bin Point Samples in Sparse Grids.
 Version: 0.1.0
 Authors@R: person("Michael D.","Sumner", role = c("aut", "cre"), email = "mdsumner@gmail.com")
-Description: Aiming to separate out the Pimage functionality of SGAT, so it can
+Description: Aiming to simplify and separate out the Pimage functionality of SGAT, so it can
     be used for other purposes.
 License: GPL-3
 LazyData: TRUE
