@@ -21,10 +21,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ## R Markdown
 
 ```{r}
-load("data/082_WI_MARCH2013fitSST.RData")
+load("bulkdata/082_WI_MARCH2013fitSST.RData")
+load("bulkdata/19747_WI_DEC2011fitSST.RData")
 library(raster)
-x <- SGAT::Pimage(fit, proj = NULL)
 library(splat)
+x <- SGAT::Pimage(fit, proj = NULL)
+
 sx <- splat(x)
 
 library(dplyr)

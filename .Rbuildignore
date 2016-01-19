@@ -1,6 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^.RData$
-^data/082_WI_MARCH2013fitSST.RData$
+^bulkdata/
 ^README\.Rmd$
 ^README-.*\.png$

@@ -1,2 +1,2 @@
-data/082_WI_MARCH2013fitSST.RData
+^data/.*fitSST.RData$
 .Rproj.user
