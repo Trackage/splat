@@ -1,61 +1,42 @@
----
-output:
-  md_document:
-    variant: markdown_github
----
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+R Markdown
+----------
 
-
-
-
-
-## R Markdown
-
-
-```r
-load("data/082_WI_MARCH2013fitSST.RData")
+``` r
+load("bulkdata/082_WI_MARCH2013fitSST.RData")
+#load("bulkdata/19747_WI_DEC2011fitSST.RData")
 library(raster)
-x <- SGAT::Pimage(fit, proj = NULL)
 library(splat)
-#> 
-#> Attaching package: 'splat'
-#> 
-#> The following objects are masked _by_ '.GlobalEnv':
-#> 
-#>     fit, splat
-sx <- splat(x)
-
+library(rbenchmark)
 library(dplyr)
+benchmark(
+  Pimage = {px <- SGAT::Pimage(fit, type = "primary", proj = NULL)}, 
+  splat = {sx <- tally(splat(fit) %>%  group_by(index, cell))}, 
+  replications = 5)
+#>     test replications elapsed relative user.self sys.self user.child
+#> 1 Pimage            5   13.89    1.000     13.50     0.36         NA
+#> 2  splat            5   38.58    2.778     37.89     0.66         NA
+#>   sys.child
+#> 1        NA
+#> 2        NA
 
-g <- setValues(x[], NA_real_)
-g1 <- g
-system.time({
-  sgg <- sx$pix  %>% group_by(cell) %>% summarize(bin = sum(bin))
-  g1[sgg$cell] <- sgg$bin
-})
-#> Error in UseMethod("group_by_"): no applicable method for 'group_by_' applied to an object of class "NULL"
-#> Timing stopped at: 0 0 0
+format(as.numeric(object.size(px) / object.size(sx)))
+#> [1] "1.395879"
 
-system.time({
-  g2 <- x[]
-})
-#>    user  system elapsed 
-#>    0.05    0.00    0.05
 
-## much simpler and almost as fast
-g <- SGAT:::.chaingrid(SGAT::chainCollapse(fit$x))
-g1 <- g
-system.time({
-x <- splatchain(g, SGAT::chainCollapse(fit$x))
-xs <- x  %>% group_by(cell)  %>%  summarize(bin = sum(bin))
-g1[xs$cell] <- xs$bin
-})
-#>    user  system elapsed 
-#>    2.90    0.04    2.98
-system.time({
-g2 <- SGAT::Pimage(fit, grid = g)[]
-})
-#>    user  system elapsed 
-#>    2.24    0.14    2.40
+r0 <- px[] * 0
+imgsp <- function(x) {
+  suppressMessages(xx <- tally(x %>% group_by(cell)))
+  r0[xx$cell] <- xx$n
+  r0
+} 
+benchmark(PimageRaster = {pall <- px[]}, 
+          splatRaster = {sall  <- imgsp(sx)}, 
+          replications  = 10)
+#>           test replications elapsed relative user.self sys.self user.child
+#> 1 PimageRaster           10    0.48    1.000      0.48        0         NA
+#> 2  splatRaster           10    0.70    1.458      0.70        0         NA
+#>   sys.child
+#> 1        NA
+#> 2        NA
 ```

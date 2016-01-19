@@ -1,2 +1,2 @@
-^data/.*fitSST.RData$
 .Rproj.user
+^bulkdata/.*.RData$
