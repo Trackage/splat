@@ -9,19 +9,23 @@ library(raster)
 library(splat)
 library(rbenchmark)
 library(dplyr)
+
+
+
 benchmark(
   Pimage = {px <- SGAT::Pimage(fit, type = "primary", proj = NULL)}, 
-  splat = {sx <- tally(splat(fit) %>%  group_by(index, cell))}, 
-  replications = 5)
+  splat = {sx <- splat(fit)}, 
+  replications = 1)
 #>     test replications elapsed relative user.self sys.self user.child
-#> 1 Pimage            5   13.89    1.000     13.50     0.36         NA
-#> 2  splat            5   38.58    2.778     37.89     0.66         NA
+#> 1 Pimage            1    2.69    1.000      2.56     0.11         NA
+#> 2  splat            1    2.93    1.089      2.74     0.19         NA
 #>   sys.child
 #> 1        NA
 #> 2        NA
 
+
 format(as.numeric(object.size(px) / object.size(sx)))
-#> [1] "1.395879"
+#> [1] "1.861207"
 
 
 r0 <- px[] * 0
@@ -30,13 +34,22 @@ imgsp <- function(x) {
   r0[xx$cell] <- xx$n
   r0
 } 
+imgsp2 <- function(x) {
+  suppressMessages(xx <- x %>% group_by(cell) %>% summarize(n = sum(bin)))
+  r0[xx$cell] <- xx$n
+  r0
+} 
+
 benchmark(PimageRaster = {pall <- px[]}, 
-          splatRaster = {sall  <- imgsp(sx)}, 
+          splatRaster = {sall  <- imgsp2(sx)}, 
           replications  = 10)
 #>           test replications elapsed relative user.self sys.self user.child
-#> 1 PimageRaster           10    0.48    1.000      0.48        0         NA
-#> 2  splatRaster           10    0.70    1.458      0.70        0         NA
+#> 1 PimageRaster           10    0.49    1.000      0.48     0.00         NA
+#> 2  splatRaster           10    0.61    1.245      0.56     0.02         NA
 #>   sys.child
 #> 1        NA
 #> 2        NA
+
+# plot(sqrt(pall), col = palr::sstPal(100))
+# plot(sqrt(sall), col = palr::sstPal(100))
 ```

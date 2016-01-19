@@ -31,10 +31,14 @@ library(raster)
 library(splat)
 library(rbenchmark)
 library(dplyr)
+
+
+
 benchmark(
   Pimage = {px <- SGAT::Pimage(fit, type = "primary", proj = NULL)}, 
-  splat = {sx <- tally(splat(fit) %>%  group_by(index, cell))}, 
-  replications = 5)
+  splat = {sx <- splat(fit)}, 
+  replications = 1)
+
 
 format(as.numeric(object.size(px) / object.size(sx)))
 
@@ -45,11 +49,18 @@ imgsp <- function(x) {
   r0[xx$cell] <- xx$n
   r0
 } 
+imgsp2 <- function(x) {
+  suppressMessages(xx <- x %>% group_by(cell) %>% summarize(n = sum(bin)))
+  r0[xx$cell] <- xx$n
+  r0
+} 
+
 benchmark(PimageRaster = {pall <- px[]}, 
-          splatRaster = {sall  <- imgsp(sx)}, 
+          splatRaster = {sall  <- imgsp2(sx)}, 
           replications  = 10)
 
-
+# plot(sqrt(pall), col = palr::sstPal(100))
+# plot(sqrt(sall), col = palr::sstPal(100))
 
 
 

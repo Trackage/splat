@@ -19,8 +19,18 @@ splat.list<- function(x, grid, proj = NULL, ...) {
 
 .splat3way <- function(x, r0, ...) {
   ntime <- nrow(x)
-  niter <- dim(x)[3] 
-  data_frame(cell = raster::cellFromXY(r0, .gperm(x, list(c(1, 3), 2))), 
-                  index = rep(seq(ntime), niter)) %>% group_by(cell, index) ##%>% arrange(index)
+  niter <- dim(x)[3]
+  ncc <- ncell(r0)
+  allcells <- seq(ncc)
+  l <- vector("list", ntime)
+  d0 <- data_frame(cell = allcells)
+  for (i in seq_along(l)) {
+    l[[i]] <- bind_cols(d0, 
+                        data_frame(bin = tabulate(raster::cellFromXY(r0, t(x[i,,])), ncc),  index = rep(i, ncc))
+                        ) %>% filter(bin > 0)
+  }
+  do.call(bind_rows, l)
+  #data_frame(cell = raster::cellFromXY(r0, .gperm(x, list(c(1, 3), 2))), 
+  #                index = rep(seq(ntime), niter)) %>% group_by(cell, index) ##%>% arrange(index)
 }
 
