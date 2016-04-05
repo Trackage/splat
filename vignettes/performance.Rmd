@@ -1,0 +1,104 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(raster)
+library(splat)
+library(rbenchmark)
+library(dplyr)
+```
+
+## R Markdown
+
+```{r,eval=TRUE}
+load("bulkdata/082_WI_MARCH2013fitSST.RData")
+#load("bulkdata/19747_WI_DEC2011fitSST.RData")
+library(raster)
+library(splat)
+library(rbenchmark)
+library(dplyr)
+
+
+
+benchmark(
+  Pimage = {px <- SGAT::Pimage(fit, type = "primary", proj = NULL)}, 
+  splat = {sx <- splat(fit)}, 
+  replications = 1)
+
+
+format(as.numeric(object.size(px) / object.size(sx)))
+
+
+r0 <- px[] * 0
+imgsp <- function(x) {
+  suppressMessages(xx <- tally(x %>% group_by(cell)))
+  r0[xx$cell] <- xx$n
+  r0
+} 
+imgsp2 <- function(x) {
+  suppressMessages(xx <- x %>% group_by(cell) %>% summarize(n = sum(bin)))
+  r0[xx$cell] <- xx$n
+  r0
+} 
+
+benchmark(PimageRaster = {pall <- px[]}, 
+          splatRaster = {sall  <- imgsp2(sx)}, 
+          replications  = 10)
+
+# plot(sqrt(pall), col = palr::sstPal(100))
+# plot(sqrt(sall), col = palr::sstPal(100))
+
+
+
+
+```
+
+```{r,eval=FALSE,echo=FALSE,include=FALSE}
+library(profr)
+tx <- profr(x<-  SGAT::Pimage(fit, type = "primary", proj = NULL))
+tsx <- profr(sx <- splat(fit))
+op <-  par(mfrow = c(2, 1))
+plot(tx)
+plot(tsx)
+par(op)
+
+library(dplyr)
+
+g <- setValues(x[], NA_real_)
+g1 <- g
+system.time({
+  sgg <- sx$pix  %>% group_by(cell) %>% summarize(bin = sum(bin))
+  g1[sgg$cell] <- sgg$bin
+})
+
+system.time({
+  g2 <- x[]
+})
+
+## much simpler and almost as fast
+g <- SGAT:::.chaingrid(SGAT::chainCollapse(fit$x))
+g1 <- g
+system.time({
+x <- splatchain(g, SGAT::chainCollapse(fit$x))
+xs <- x  %>% group_by(cell)  %>%  summarize(bin = sum(bin))
+g1[xs$cell] <- xs$bin
+})
+system.time({
+g2 <- SGAT::Pimage(fit, grid = g)[]
+})
+
+```

@@ -9,11 +9,6 @@ splat.list<- function(x, grid, proj = NULL, ...) {
   ## check this is a fit from SGAT ...
   xarr <- .chainCollapse(x$x)
   if (missing(grid)) grid <- .chaingrid(xarr)
- # if (!is.null(proj) & !.projIsLonLat(proj)) {
-#    grid <- raster::projectExtent(grid, proj)
- # }
-  ## determine method (or just do both)
-  #xarr <- .chainCollapse(x$x)
   .splat3way(xarr, grid)
 }
 
@@ -29,8 +24,37 @@ splat.list<- function(x, grid, proj = NULL, ...) {
                         data_frame(bin = tabulate(raster::cellFromXY(r0, t(x[i,,])), ncc),  index = rep(i, ncc))
                         ) %>% filter(bin > 0)
   }
-  do.call(bind_rows, l)
-  #data_frame(cell = raster::cellFromXY(r0, .gperm(x, list(c(1, 3), 2))), 
-  #                index = rep(seq(ntime), niter)) %>% group_by(cell, index) ##%>% arrange(index)
+  out <- do.call(bind_rows, l)
+  class(out) <- c("splat", class(out))
+  attr(out, "grid") <- raster(r0)
+  out
 }
+
+#' @export
+show.splat <- function(x, ...) {
+  cat("splat object on \n")
+  print(attr(x, "grid"))
+  NextMethod("print", x)
+}
+
+#' @export 
+print.splat <- show.splat
+
+#' @export
+`[.splat` <- function(x, i, j, ...) {
+  #if (missing(j)) print("j is missing")
+  #if (missing(i)) print("i is missing")
+  print(class(x))
+  print(str(i))
+  if (is.numeric(i) & missing(j)) {
+    ## kick in to rasterize
+    r <- attr(x, "grid")
+    r <- setValues(r, rep(NA_real_, ncell(r)))
+    bins <- filter_(x, index %in% i) %>% group_by(index) %>% summarize(count = sum(bin))
+    r[bins$cell] <- bins$count
+    return(r)
+  }
+  NextMethod("[", x)
+}
+
 
