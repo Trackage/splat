@@ -14,3 +14,4 @@ Imports:
 Suggests:
     knitr
 RoxygenNote: 5.0.1
+Remotes: SWotherspoon/SGAT
