@@ -1,9 +1,23 @@
-
+#' splat
+#' 
 #' @importFrom dplyr data_frame arrange
+#' @param x generic
+#'
+#' @param ... ignored
+#' 
 #' @importFrom raster projectExtent cellFromXY
 #' @export
-splat <- function(x, ...) UseMethod("splat")
+splat <- function(x, ...) {
+ setMethod("splat")
+}
 
+#' splat list
+#' @param x fit from SGAT
+#'
+#' @param grid raster
+#' @param proj crs
+#' @param ... ignored
+#'
 #' @export
 splat.list<- function(x, grid, proj = NULL, ...) {
   ## check this is a fit from SGAT ...
@@ -12,17 +26,19 @@ splat.list<- function(x, grid, proj = NULL, ...) {
   .splat3way(xarr, grid)
 }
 
+#' @importFrom raster ncell
+#' @importFrom dplyr %>% group_by_
 .splat3way <- function(x, r0, ...) {
   ntime <- nrow(x)
   niter <- dim(x)[3]
-  ncc <- ncell(r0)
+  ncc <- raster::ncell(r0)
   allcells <- seq(ncc)
   l <- vector("list", ntime)
   d0 <- data_frame(cell = allcells)
   for (i in seq_along(l)) {
     l[[i]] <- bind_cols(d0, 
                         data_frame(bin = tabulate(raster::cellFromXY(r0, t(x[i,,])), ncc),  index = rep(i, ncc))
-                        ) %>% filter(bin > 0)
+                        ) %>% filter(quote(bin > 0))
   }
   out <- do.call(bind_rows, l)
   class(out) <- c("splat", class(out))
@@ -31,14 +47,18 @@ splat.list<- function(x, grid, proj = NULL, ...) {
 }
 
 #' @export
-show.splat <- function(x, ...) {
-  cat("splat object on \n")
+#' @rdname splat
+print.splat <- function(x, ...) {
+  cat("splat on \n")
   print(attr(x, "grid"))
-  NextMethod("print", x)
+  attr(x, "grid") <- NULL
+  class(x) <- class(x)[-1]
+  print(x)
 }
 
 #' @export 
-print.splat <- show.splat
+#' @rdname splat
+show.splat <- print.splat 
 
 #' @export
 `[.splat` <- function(x, i, j, ...) {
@@ -50,7 +70,7 @@ print.splat <- show.splat
     ## kick in to rasterize
     r <- attr(x, "grid")
     r <- setValues(r, rep(NA_real_, ncell(r)))
-    bins <- filter_(x, index %in% i) %>% group_by(index) %>% summarize(count = sum(bin))
+    bins <- filter_(x, quote(index %in% i)) %>% group_by_("index") %>% summarize(count = quote(sum(bin)))
     r[bins$cell] <- bins$count
     return(r)
   }
