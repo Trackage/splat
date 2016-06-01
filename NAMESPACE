@@ -2,9 +2,9 @@
 
 S3method("[",splat)
 S3method(print,splat)
+S3method(splat,list)
 export(show.splat)
 export(splat)
-export(splat.list)
 importFrom(dplyr,"%>%")
 importFrom(dplyr,arrange)
 importFrom(dplyr,bind_cols)

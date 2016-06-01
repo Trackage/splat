@@ -4,7 +4,7 @@
 \alias{splat.list}
 \title{splat list}
 \usage{
-splat.list(x, grid, proj = NULL, ...)
+\method{splat}{list}(x, grid, proj = NULL, ...)
 }
 \arguments{
 \item{x}{fit from SGAT}

@@ -8,7 +8,7 @@
 #' @importFrom raster projectExtent cellFromXY
 #' @export
 splat <- function(x, ...) {
- setMethod("splat")
+ UseMethod("splat")
 }
 
 #' splat list
@@ -38,7 +38,7 @@ splat.list<- function(x, grid, proj = NULL, ...) {
   for (i in seq_along(l)) {
     l[[i]] <- bind_cols(d0, 
                         data_frame(bin = tabulate(raster::cellFromXY(r0, t(x[i,,])), ncc),  index = rep(i, ncc))
-                        ) %>% filter(quote(bin > 0))
+                        ) %>% filter_(quote(bin > 0))
   }
   out <- do.call(bind_rows, l)
   class(out) <- c("splat", class(out))
