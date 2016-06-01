@@ -19,11 +19,22 @@ knitr::opts_chunk$set(
 
 
 ```{r}
-load("bulkdata/082_WI_MARCH2013fitSST.RData")
+load("D:/twotera/GIT/splat/bulkdata/082_WI_MARCH2013fitSST.RData")
 #load("bulkdata/19747_WI_DEC2011fitSST.RData")
 library(raster)
 library(splat)
 library(dplyr)
-sx <- splat(fit)
+system.time(
+  sx <- splat(fit)
+)
+
+r <- attr(sx, "grid")
+ssx <- sx %>% group_by(cell) %>% summarize(bin = sum(bin))
+r[ssx$cell] <- ssx$bin
+plot(r, zlim = c(0, 7e3))
+
+print(format(object.size(fit), units = "Mb"))
+str(fit)
+
 
 ```
