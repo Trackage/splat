@@ -9,3 +9,8 @@ find_modal_loc <- function(x) {
   data.frame(x = xy[, 1], y = xy[, 2], time = as.POSIXct(x))
   
 }
+
+#find_modal_loc <- function(x, map) {
+#  do.call(rbind, lapply(split(x, x$gmt), function(celltab) apply(xyFromCell(celltab$cell, map), 2, mean)))
+#}
+
