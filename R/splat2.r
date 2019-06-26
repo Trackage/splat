@@ -70,8 +70,10 @@ show.splat <- print.splat
     ## kick in to rasterize
     r <- attr(x, "grid")
     r <- setValues(r, rep(NA_real_, ncell(r)))
-    bins <- filter_(x, quote(index %in% i)) %>% group_by_("index") %>% summarize(count = quote(sum(bin)))
-    r[bins$cell] <- bins$count
+    bins <- dplyr::filter(x, index %in% i) %>% 
+      dplyr::group_by(index) %>% 
+      dplyr::summarize(count = sum(bin))
+    r[bins$index] <- bins$count
     return(r)
   }
   NextMethod("[", x)
